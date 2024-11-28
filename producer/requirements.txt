@@ -1,1 +1,4 @@
 kafka-python-ng
+requests
+beautifulsoup4
+lxml

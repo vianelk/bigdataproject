@@ -6,7 +6,7 @@ def json_deserializer(data):
 
 consumer = KafkaConsumer(
     'test_topic',
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=['kafka:9092'],
     value_deserializer=json_deserializer,
     auto_offset_reset='earliest'
 )

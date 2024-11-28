@@ -1,15 +1,14 @@
-# Le container de depart, que je veux modifier
-
+# Le container de départ, que je veux modifier
 FROM python:3.9-slim
 
-# définition du dossier de travail
+# Définition du dossier de travail ici /app
 WORKDIR /app
 
-# copy du fichier requirements.txt vers /app
+# Copy du fichier requirements.txt vers /app (le point fait référence à ce dossier)
 COPY requirements.txt .
 
-# installatrion des despendances
+# Installation des dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-#Lancement du projet
-CMD ["python", "producer.py"]
+# Lancement du projet
+CMD ["python" ,"producer.py"]
