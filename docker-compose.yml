@@ -36,7 +36,7 @@ services:
       WEATHER_API_KEY: ${WEATHER_API_KEY} 
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-weather-api.py"]
+    command: ["python", "-u", "producer-scrapper.py"]
 
   consumer:
     build:

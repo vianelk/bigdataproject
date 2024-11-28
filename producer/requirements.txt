@@ -1,2 +1,4 @@
 kafka-python-ng
 requests
+bs4
+lxml
