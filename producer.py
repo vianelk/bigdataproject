@@ -14,7 +14,7 @@ counter = 0
 while True:
     message = {
         'id': counter,
-        'message': 'hello World',
+        'message': 'Hello World',
         'timestamp': time.time()
     }
     print(f'Producing message {message}')
