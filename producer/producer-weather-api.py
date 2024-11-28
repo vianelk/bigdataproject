@@ -10,30 +10,41 @@ def json_serializer(data):
 
 KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
 WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY')
+REQUESTS_INTERVAL = 10
 
 producer = KafkaProducer(
     bootstrap_servers=[KAFKA_BROKER],
     value_serializer=json_serializer
 )
-
-counter = 0
+initialized = False
 
 while True:
-    city = 'Paris'
-    url = f'https://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&aqi=no'
-    data = requests.get(url).json()
-    currentTemp = data.get('current').get('temp_c')
+    # Not waiting for first iteration
+    if initialized:
+        time.sleep(REQUESTS_INTERVAL)
+    initialized = True
 
+    city = 'paris'
+    url = f'https://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&aqi=no'
+
+    try:
+        data = requests.get(url).json() # Request data from API
+        currentTemp = data['current']['temp_c'] # Get temperature field value
+    except Exception as err: # Handle exceptions (just logging them)
+        log(f'Error: {err}')
+        continue
+
+    # Construct message to publish to kafka
     message = {
-        'id': counter,
         'temperature': currentTemp,
         'city': city,
         'timestamp': time.time()
     }
     log(f'Producing message {message}')
 
-    producer.send('test_topic', message) # Send message to kafka
-    producer.flush() # Wait for requests completion
-
-    time.sleep(5)
-    counter += 1
+    try:
+        producer.send('test_topic', message) # Send message to kafka
+        producer.flush() # Wait for requests completion
+    except Exception as err: # Handle exceptions (just logging them)
+        log(f'Error: {err}')
+        continue
