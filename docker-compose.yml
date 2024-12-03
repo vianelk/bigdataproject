@@ -33,9 +33,10 @@ services:
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
+      WEATHER_API_KEY: ${WEATHER_API_KEY} 
     volumes:
       - ./producer:/app
-    # command: ["python", "-u", "producer.py"]
+    command: ["python", "-u", "producer-scrapper.py"]
 
   consumer:
     build:
