@@ -1,22 +1,32 @@
 from kafka import KafkaProducer
+import os
+import sys
 import json
 import time
 import requests
 
+def log(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
 
 def json_serializer(data):
     return json.dumps(data).encode('utf-8')
 
+KAFKA_BROKER = os.environ.get('KAFKA_BROKER', 'kafka:9092')
+API_KEY = '1122ba74-d4c9-4def-b86d-c1f2fd60b391'
+REQUESTS_INTERVAL = 10
+
 producer = KafkaProducer(
-    bootstrap_servers=['kafka:9092'],
+    bootstrap_servers=[KAFKA_BROKER],
     value_serializer=json_serializer
 )
+initialized = False
 
 while True:
-    API_KEY = '1122ba74-d4c9-4def-b86d-c1f2fd60b391'
-    symbol = "BTC"
-    reduction_rate = 50
-    url = f"https://pro-api.coinmarketcap.com/v1/blockchain/statistics/latest"
+    if initialized:
+        time.sleep(REQUESTS_INTERVAL)
+    initialized = True
+
+    url = "https://pro-api.coinmarketcap.com/v1/blockchain/statistics/latest"
     headers = {
         "Accepts": "application/json",
         "X-CMC_PRO_API_KEY": API_KEY,
@@ -24,25 +34,11 @@ while True:
 
     try:
         
-        response_data = {
-            "data": {
-                "BTC": {
-                    "id": 1,
-                    "slug": "bitcoin",
-                    "symbol": "BTC",
-                    "block_reward_static": 12.5,
-                    "consensus_mechanism": "proof-of-work",
-                    "difficulty": "11890594958796",
-                    "hashrate_24h": "85116194130018810000",
-                    "pending_transactions": 1177,
-                    "reduction_rate": "50%",
-                    "total_blocks": 595165,
-                    "total_transactions": "455738994",
-                    "first_block_timestamp": "2009-01-09T02:54:25.000Z"
-                }
-            }
-        }
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  
+        response_data = response.json()  
 
+        
         btc_data = response_data['data']['BTC']
         message = {
             'id': btc_data.get('id', 'N/A'),
@@ -56,16 +52,18 @@ while True:
             'reduction_rate': btc_data.get('reduction_rate', 'N/A'),
             'total_blocks': btc_data.get('total_blocks', 'N/A'),
             'total_transactions': btc_data.get('total_transactions', 'N/A'),
-            'tps_24h': btc_data.get('tps_24h', 'N/A'),
+            'first_block_timestamp': btc_data.get('first_block_timestamp', 'N/A'),
             'timestamp': time.time()
         }
 
-        print(f"Producing message: {message}")
+        log(f"Producing message: {message}")
+
         producer.send('test_topic', message)
         producer.flush()
-        time.sleep(2)
 
     except requests.exceptions.RequestException as req_err:
-        print(f"Request error: {req_err}")
+        log(f"Request error: {req_err}")
+    except KeyError as key_err:
+        log(f"Key error: {key_err}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        log(f"Unexpected error: {e}")
