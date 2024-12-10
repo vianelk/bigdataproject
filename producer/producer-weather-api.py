@@ -43,7 +43,7 @@ while True:
     log(f'Producing message {message}')
 
     try:
-        producer.send('test_topic', message) # Send message to kafka
+        producer.send('weather_topic', message) # Send message to kafka
         producer.flush() # Wait for requests completion
     except Exception as err: # Handle exceptions (just logging them)
         log(f'Error: {err}')
