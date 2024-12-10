@@ -7,7 +7,7 @@ def json_deserializer(data):
 KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
 
 # Demande à l'utilisateur quel topic écouter
-topic = 'exchange_listings_latest_topic'
+topic = 'trending_topic'
 
 consumer = KafkaConsumer(
     topic,

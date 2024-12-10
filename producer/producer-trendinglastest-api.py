@@ -8,7 +8,7 @@ def log(*args, **kwargs):
 def json_serializer(data):
     return json.dumps(data).encode('utf-8')
 
-KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
+KAFKA_BROKER = os.environ.get('KAFKA_BROKER','localhost:9092')
 REQUESTS_INTERVAL = 10
 
 producer = KafkaProducer(
@@ -19,7 +19,7 @@ producer = KafkaProducer(
 initialized = False
 
 # Paramètres pour l'API CoinMarketCap (sandbox)
-url = 'https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
 parameters = {
   'start':'1',
   'limit':'10',

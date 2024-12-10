@@ -20,7 +20,7 @@ producer = KafkaProducer(
 initialized = False
 
 # Endpoint pour récupérer les dernières listings d'exchanges
-url = 'https://sandbox-api.coinmarketcap.com/v1/exchange/listings/latest'
+url = 'https://pro-api.coinmarketcap.com/v1/exchange/listings/latest'
 headers = {
     'Accepts': 'application/json',
     'X-CMC_PRO_API_KEY': CMC_API_KEY
@@ -28,7 +28,7 @@ headers = {
 
 # Paramètres de la requête
 params = {
-    'limit': '50',   
+    'limit': '5',   
     'convert': 'EUR'
 }
 
@@ -40,7 +40,7 @@ while True:
     try:
         response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
-            log(f"Erreur: Le serveur a renvoyé le statut {response.status_code} : {response.text}")
+            log(f"ErrEUR: Le servEUR a renvoyé le statut {response.status_code} : {response.text}")
             continue
 
         data = response.json()
@@ -118,5 +118,5 @@ while True:
             log("Pas de champ 'data' dans la réponse ou 'data' n'est pas une liste, tentative ignorée...")
 
     except Exception as err:
-        log(f'Erreur: {err}')
+        log(f'ErrEUR: {err}')
         continue
