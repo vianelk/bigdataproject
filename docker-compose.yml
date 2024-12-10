@@ -1,17 +1,12 @@
-name: big-data-demo
-
 services:
   # Zookeeper est là pour faire une mémoire partagée
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
-
   # Définition de mon broker KAFKA
   kafka:
     image: wurstmeister/kafka
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
     environment:
@@ -25,28 +20,21 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   producer:
-    build:
-      context: producer
-      dockerfile: Dockerfile
-    depends_on:
-      - kafka
-    restart: on-failure
-    environment:
-      KAFKA_BROKER: kafka:9092
-      WEATHER_API_KEY: ${WEATHER_API_KEY} 
+    build: ./producer
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-scrapper.py"]
-
-  consumer:
-    build:
-      context: consumer
-      dockerfile: Dockerfile
     depends_on:
       - kafka
-    restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
+    command: python -u producer-fiat.py
+
+  consumer:
+    build: ./consumer 
     volumes:
       - ./consumer:/app
-    # command: ["python", "-u", "consumer.py"]
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+    command: python -u consumer-fiat.py
