@@ -6,12 +6,19 @@ services:
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo \"ruok\" | nc -w 2 localhost 2181 | grep imok"]
+      interval: 30s
+      timeout: 2s
+      retries: 5
+      start_period: 1m30s
 
   # Définition de mon broker KAFKA
   kafka:
     image: wurstmeister/kafka
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     ports:
       - "9092:9092"
     environment:
@@ -23,13 +30,20 @@ services:
       KAFKA_CREATE_TOPICS: "test_topic:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "bash", "-c", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
 
   producer:
     build:
       context: producer
       dockerfile: Dockerfile
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
@@ -42,7 +56,8 @@ services:
       context: consumer
       dockerfile: Dockerfile
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
@@ -79,7 +94,7 @@ services:
     # restart: always
     env_file:
       - ./hadoop-config.env
-    command: ["bash", "-c", "hdfs datanode"]
+    command: ["bash", "-c", "rm -rf /tmp/hadoop-hadoop && hdfs datanode"]
     # Check if datanode is available at port 9864
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -f http://datanode_1:9864/ || exit 1"]
@@ -97,7 +112,7 @@ services:
     # restart: always
     env_file:
       - ./hadoop-config.env
-    command: ["bash", "-c", "hdfs datanode"]
+    command: ["bash", "-c", "rm -rf /tmp/hadoop-hadoop && hdfs datanode"]
     # Check if datanode is available at port 9864
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -f http://datanode_2:9864/ || exit 1"]
