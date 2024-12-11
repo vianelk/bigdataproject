@@ -36,7 +36,8 @@ services:
       WEATHER_API_KEY: ${WEATHER_API_KEY} 
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-scrapper.py"]
+    command: sleep infinity
+    # command: ["python", "-u", "producer-scrapper.py"]
 
   consumer:
     build:
@@ -49,13 +50,12 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
+    command: sleep infinity
     # command: ["python", "-u", "consumer.py"]
 
   namenode: # Controle le stockage dans les datanode
-    image: apache/hadoop:3.4.1 #CentOS7
-    hostname: namenode
+    build: namenode
     volumes:
-      - ./namenode/Makefile:/opt/hadoop/Makefile # fichier qui contient les scripts d'initialisation du container
       - ./spark-scripts:/opt/zeppelin/notebook/spark-scripts
     ports:
       - 9870:9870 # HDFS webUI
@@ -63,33 +63,97 @@ services:
     env_file:
       - ./hadoop-config.env
     environment:
-      # Définition du répertoire de stockage des métadonnées du NameNode
-      ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name"
-    command: bash -c "sudo sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS*.repo && sudo yum -y update && sudo yum clean all && sudo yum install -y make && sudo make install-spark && make install-zepplin && make start-namenode"
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name" # Définition du répertoire de stockage des métadonnées du NameNode
+    command: ["bash", "-c", "make start-zeppelin && hdfs namenode"]
+    # Check if HDFS is running on port 9870
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://namenode:9870/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
 
   datanode_1: # Stocke des datablocks
     image: apache/hadoop:3.4.1
-    command: ['hdfs', 'datanode']
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+    # restart: always
     env_file:
       - ./hadoop-config.env
+    command: ["bash", "-c", "hdfs datanode"]
+    # Check if datanode is available at port 9864
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://datanode_1:9864/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
 
   datanode_2: # Stocke des datablocks
     image: apache/hadoop:3.4.1
-    command: ['hdfs', 'datanode']
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+    # restart: always
     env_file:
       - ./hadoop-config.env
+    command: ["bash", "-c", "hdfs datanode"]
+    # Check if datanode is available at port 9864
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://datanode_2:9864/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
 
   resourcemanager: # gestion des ressources
     image: apache/hadoop:3.4.1
-    hostname: resourcemanager
-    command: ['yarn','resourcemanager'] # Commande de démarrage du resource manager YARN
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+      # # Start only when datanodes (1 and 2) are healthy
+      # datanode_1:
+      #   condition: service_healthy
+      # datanode_2:
+      #   condition: service_healthy
     ports:
       - 8088:8088 # YARN webUI
     env_file:
       - ./hadoop-config.env
+    command: ['yarn','resourcemanager'] # Commande de démarrage du resource manager YARN
+    # Check if resource manager is available at port 8088
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://resourcemanager:8088/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
 
   nodemanager: #  Gestion des noeuds
     image: apache/hadoop:3.4.1
-    command: ['yarn','nodemanager']
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+      # # Start only when datanodes (1 and 2) are healthy
+      # datanode_1:
+      #   condition: service_healthy
+      # datanode_2:
+      #   condition: service_healthy
+      # Start only when resourcemanager is healthy
+      resourcemanager:
+        condition: service_healthy
     env_file:
       - ./hadoop-config.env
+    command: ['yarn','nodemanager']
+    # Check if node manager is available at port 8042
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://nodemanager:8042/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
