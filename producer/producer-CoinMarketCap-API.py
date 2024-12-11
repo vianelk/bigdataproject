@@ -19,7 +19,7 @@ producer = KafkaProducer(
 initialized = False
 
 # Paramètres pour l'API CoinMarketCap (sandbox)
-url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/map'
 parameters = {
   'start':'1',
   'limit':'10',
@@ -49,10 +49,8 @@ while True:
                     "id": item["id"],
                     "name": item["name"],
                     "symbol": item["symbol"],
-                    "price": item["quote"]["EUR"]["price"],
-                    "market_cap": item["quote"]["EUR"]["market_cap"],
-                    "volume_24h": item["quote"]["EUR"]["volume_24h"],
-                    "percent_change_24h": item["quote"]["EUR"]["percent_change_24h"]
+                    "rank": item["rank"],
+                    "mslug": item["slug"]
                 }
                 simplified_data.append(crypto_info)
 
