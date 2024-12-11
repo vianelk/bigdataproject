@@ -1,12 +1,24 @@
+name: big-data-demo
+
 services:
   # Zookeeper est là pour faire une mémoire partagée
   zookeeper:
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo \"ruok\" | nc -w 2 localhost 2181 | grep imok"]
+      interval: 30s
+      timeout: 2s
+      retries: 5
+      start_period: 1m30s
+
   # Définition de mon broker KAFKA
   kafka:
     image: wurstmeister/kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
     ports:
       - "9092:9092"
     environment:
@@ -18,25 +30,142 @@ services:
       KAFKA_CREATE_TOPICS: "test_topic:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    # healthcheck:
+    #   test: ["CMD", "bash", "-c", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list"]
+    #   interval: 30s
+    #   timeout: 30s
+    #   retries: 5
+    #   start_period: 1m30s
 
   producer:
-    build: ./producer
+    build:
+      context: producer
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_started
+    restart: on-failure
+    environment:
+      KAFKA_BROKER: kafka:9092
     volumes:
       - ./producer:/app
-    depends_on:
-      - kafka
-    restart: on-failure
-    environment:
-      KAFKA_BROKER: kafka:9092
-    command: python -u producer-fiat.py
+    command: ["python", "-u", "producer-exchangeplatform-api.py"]
 
   consumer:
-    build: ./consumer 
-    volumes:
-      - ./consumer:/app
+    build:
+      context: consumer
+      dockerfile: Dockerfile
     depends_on:
-      - kafka
+      kafka:
+        condition: service_started
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
-    command: python -u consumer-fiat.py
+    volumes:
+      - ./consumer:/app
+    command: ["python", "-u", "consumer-exchangeplatform.py"]
+
+  namenode: # Controle le stockage dans les datanode
+    build: namenode
+    volumes:
+      - ./spark-scripts:/opt/zeppelin/notebook/spark-scripts
+    ports:
+      - 9870:9870 # HDFS webUI
+      - 8080:8080 # Zeppelin webUI
+    env_file:
+      - ./config.env
+    environment:
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name" # Définition du répertoire de stockage des métadonnées du NameNode
+    command: ["bash", "-c", "make start-zeppelin && hdfs namenode"]
+    # Check if HDFS is running on port 9870
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://namenode:9870/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
+
+  datanode_1: # Stocke des datablocks
+    image: apache/hadoop:3.4.1
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+    # restart: always
+    env_file:
+      - ./hadoop-config.env
+    command: ["bash", "-c", "rm -rf /tmp/hadoop-hadoop && hdfs datanode"]
+    # Check if datanode is available at port 9864
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://datanode_1:9864/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
+
+  datanode_2: # Stocke des datablocks
+    image: apache/hadoop:3.4.1
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+    # restart: always
+    env_file:
+      - ./hadoop-config.env
+    command: ["bash", "-c", "rm -rf /tmp/hadoop-hadoop && hdfs datanode"]
+    # Check if datanode is available at port 9864
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://datanode_2:9864/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
+
+  resourcemanager: # gestion des ressources
+    image: apache/hadoop:3.4.1
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+      # # Start only when datanodes (1 and 2) are healthy
+      # datanode_1:
+      #   condition: service_healthy
+      # datanode_2:
+      #   condition: service_healthy
+    ports:
+      - 8088:8088 # YARN webUI
+    env_file:
+      - ./hadoop-config.env
+    command: ['yarn','resourcemanager'] # Commande de démarrage du resource manager YARN
+    # Check if resource manager is available at port 8088
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://resourcemanager:8088/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
+
+  nodemanager: #  Gestion des noeuds
+    image: apache/hadoop:3.4.1
+    depends_on:
+      # Start only when HDFS starts running on namenode
+      namenode:
+        condition: service_healthy
+      # # Start only when datanodes (1 and 2) are healthy
+      # datanode_1:
+      #   condition: service_healthy
+      # datanode_2:
+      #   condition: service_healthy
+      # Start only when resourcemanager is healthy
+      resourcemanager:
+        condition: service_healthy
+    env_file:
+      - ./hadoop-config.env
+    command: ['yarn','nodemanager']
+    # Check if node manager is available at port 8042
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://nodemanager:8042/ || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 1m30s
