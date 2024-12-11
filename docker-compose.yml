@@ -30,12 +30,12 @@ services:
       KAFKA_CREATE_TOPICS: "test_topic:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    healthcheck:
-      test: ["CMD", "bash", "-c", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list"]
-      interval: 30s
-      timeout: 30s
-      retries: 5
-      start_period: 1m30s
+    # healthcheck:
+    #   test: ["CMD", "bash", "-c", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list"]
+    #   interval: 30s
+    #   timeout: 30s
+    #   retries: 5
+    #   start_period: 1m30s
 
   producer:
     build:
@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       kafka:
-        condition: service_healthy
+        condition: service_started
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       kafka:
-        condition: service_healthy
+        condition: service_started
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
