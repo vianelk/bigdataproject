@@ -2,7 +2,7 @@ from kafka import KafkaProducer
 import json
 import time
 import requests
-from bs4 import BeautifulSoup
+import os
 
 def json_serializer(data):
     return json.dumps(data).encode('utf-8')
@@ -14,24 +14,22 @@ producer = KafkaProducer(
 )
 
 while True:
-
-    url = "https://weather.com/fr-FR/temps/aujour/l/FRXX0076:1:FR"
+    API_KEY = 'xxxxxx'
+    CITY = "Paris"
+    url = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={CITY}&aqi=no"
     try:
         response = requests.get(url)
-        soup= BeautifulSoup(response.text, 'lxml')
-        # element HTML : span data-testid="TemperatureValue"
-        temp_element = soup.find('span',{'data-testid':'TemperatureValue'})
-        temp_el_clean = temp_element.text.replace('°','')
-        print(temp_el_clean)
-        currentTemp= int(temp_el_clean)
+        data = response.json()
+        currentTemp = data['current']['temp_c']
+
         message = {
-                'temperature': currentTemp,
-                'timestamp': time.time(),
-                'city':'Paris'
+            'temperature': currentTemp,
+            'timestamp': time.time(),
+            'city':'Paris'
         }
         print(f"Producing message: {message}")
         producer.send('test_topic', message) # Utilise le producer pour envoyer une objet
         producer.flush() # Demande au producer d'attendre que le message soit bien envoyé
-        time.sleep(2)
+        time.sleep(2) # toute les 2 secondes
     except Exception as e:
         print(f"Unexpected error: {e}")

@@ -1,29 +1,25 @@
 from kafka import KafkaProducer
-import os, sys, json, time
-
-def log(*args, **kwargs):
-    print(args, kwargs, file=sys.stderr)
+import json
+import time
 
 def json_serializer(data):
     return json.dumps(data).encode('utf-8')
 
-KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
-
+# Création du producer qui pointe vers notre cluster Kafka (localhost:9092)
 producer = KafkaProducer(
-    bootstrap_servers=[KAFKA_BROKER],
+    bootstrap_servers=['kafka:9092'],
     value_serializer=json_serializer
 )
 
 counter = 0
-
 while True:
     message = {
         'id': counter,
-        'message': 'Hello World',
+        'message': 'Bonjour Kafka!',
         'timestamp': time.time()
     }
-    log(f'Producing message {message}')
-    producer.send('test_topic', message) # Send message to kafka
-    producer.flush() # Wait for requests completion
+    print(f"Producing message: {message}")
+    producer.send('test_topic', message) # Utilise le producer pour envoyer une objet
+    producer.flush() # Demande au producer d'attendre que le message soit bien envoyé
     time.sleep(2)
-    counter += 1
+    counter+=1
