@@ -36,7 +36,7 @@ services:
       WEATHER_API_KEY: ${WEATHER_API_KEY} 
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-scrapper.py"]
+    command: ["python", "-u", "producer-CoinMarketCap-API.py"]
 
   consumer:
     build:
@@ -49,4 +49,4 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    # command: ["python", "-u", "consumer.py"]
+    command: ["python", "-u", "consumer-CoinMarketCap-API.py"]
