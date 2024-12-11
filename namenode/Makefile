@@ -37,7 +37,6 @@ install-zeppelin:
 		echo 'export SPARK_HOME=$(SPARK_HOME)' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
 		echo 'export PYSPARK_PYTHON=/usr/bin/python3.6' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
 		echo 'export PYSPARK_DRIVER_PYTHON=/usr/bin/python3.6' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
-		sudo /opt/zeppelin/bin/zeppelin-daemon.sh start; \
 	else \
 		echo "Zeppelin is already configured."; \
 		echo 'export JAVA_HOME=/usr/lib/jvm/jre/' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
@@ -45,8 +44,10 @@ install-zeppelin:
 		echo 'export SPARK_HOME=$(SPARK_HOME)' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
 		echo 'export PYSPARK_PYTHON=/usr/bin/python3.6' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
 		echo 'export PYSPARK_DRIVER_PYTHON=/usr/bin/python3.6' | sudo tee -a $(ZEPPELIN_HOME)/conf/zeppelin-env.sh > /dev/null; \
-		sudo /opt/zeppelin/bin/zeppelin-daemon.sh start; \
-	fi
+	fi 
 
 start-namenode:
-	hdfs namenode \
+	hdfs namenode
+
+start-zeppelin:
+	sudo /opt/zeppelin/bin/zeppelin-daemon.sh start
