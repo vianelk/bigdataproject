@@ -61,7 +61,7 @@ services:
       - 9870:9870 # HDFS webUI
       - 8080:8080 # Zeppelin webUI
     env_file:
-      - ./hadoop-config.env
+      - ./config.env
     environment:
       ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name" # Définition du répertoire de stockage des métadonnées du NameNode
     command: ["bash", "-c", "make start-zeppelin && hdfs namenode"]
