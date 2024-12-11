@@ -33,11 +33,9 @@ services:
     restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
-      WEATHER_API_KEY: ${WEATHER_API_KEY} 
     volumes:
       - ./producer:/app
-    command: sleep infinity
-    # command: ["python", "-u", "producer-scrapper.py"]
+    command: ["python", "-u", "producer-exchangeplatform-api.py"]
 
   consumer:
     build:
@@ -50,8 +48,7 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    command: sleep infinity
-    # command: ["python", "-u", "consumer.py"]
+    command: ["python", "-u", "consumer-exchangeplatform.py"]
 
   namenode: # Controle le stockage dans les datanode
     build: namenode
