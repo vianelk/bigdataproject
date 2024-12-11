@@ -48,4 +48,4 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    command: ["python", "-u", "consumer-exchangeplatform.py"]
+    # command: ["python", "-u", "consumer.py"]
