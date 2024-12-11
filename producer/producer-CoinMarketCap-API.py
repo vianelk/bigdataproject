@@ -34,12 +34,13 @@ while True:
     if initialized:
         time.sleep(REQUESTS_INTERVAL)
     initialized = True
+    print("sending request")
 
     try:
-        response = requests.get(url, headers=headers, params=parameters)
+        response = requests.get(url, headers=headers)
         data = response.json()
 
-      
+
         # data["data"] contient la liste des crypto-monnaies.
 
         if "data" in data:
@@ -49,9 +50,12 @@ while True:
                     "id": item["id"],
                     "name": item["name"],
                     "symbol": item["symbol"],
-                    "rank": item["rank"],
-                    "mslug": item["slug"]
+                    "is_active": item["is_active"],
+                    "first_historical_data": item.get("first_historical_data"),
+                    "last_historical_data": item.get("last_historical_data")
                 }
+                #print(crypto_info)
+                #producer.send('trending_topic', crypto_info)
                 simplified_data.append(crypto_info)
 
             message = {
