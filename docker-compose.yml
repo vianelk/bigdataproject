@@ -25,6 +25,7 @@ services:
       - ./producer:/app
     depends_on:
       - kafka
+    restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
     command: python -u producer-fiat.py
@@ -35,6 +36,7 @@ services:
       - ./consumer:/app
     depends_on:
       - kafka
+    restart: on-failure
     environment:
       KAFKA_BROKER: kafka:9092
     command: python -u consumer-fiat.py
