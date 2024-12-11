@@ -35,7 +35,7 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-trendinglastest-api.py"]
+    command: ["python", "-u", "producer-exchangeplatform-api.py"]
 
   consumer:
     build:
@@ -48,4 +48,4 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    command: ["python", "-u", "consumer.py"]
+    command: ["python", "-u", "consumer-exchangeplatform.py"]
