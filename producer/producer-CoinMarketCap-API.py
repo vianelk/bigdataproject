@@ -40,7 +40,7 @@ while True:
         data = response.json()
 
         if "data" in data:
-            # simplified_data = []
+            simplified_data = []
             # Print data length value
             print(f'Data has length : {len(data["data"])}')
 
@@ -55,22 +55,22 @@ while True:
                     "first_historical_data": item.get("first_historical_data"),
                     "last_historical_data": item.get("last_historical_data"),
                 }
-                # simplified_data.append(crypto_info)
+                simplified_data.append(crypto_info)
 
                 # Create a JSON message from that info
-                message = {
-                    'cryptocurrency': crypto_info,
-                    'timestamp': time.time()
-                }
+                # message = {
+                #     'cryptocurrency': crypto_info,
+                #     'timestamp': time.time()
+                # }
                 # print(message)
                 # Send message to kafka broker
-                producer.send('trending_topic', message)
+                # producer.send('trending_topic', message)
 
-            # message = {
-            #     'cryptocurrencies': simplified_data,
-            #     'timestamp': time.time()
-            # }
-            # producer.send('trending_topic', message)
+            message = {
+                'cryptocurrencies': simplified_data,
+                'timestamp': time.time()
+            }
+            producer.send('trending_topic', message)
 
             # Wait for all messages to be sent
             producer.flush()

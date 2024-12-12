@@ -46,17 +46,17 @@ def print_crypto(data):
 # Traitement des messages Kafka
 for message in consumer:
     try:
-        # data = message.value.get('cryptocurrencies', [])
+        data = message.value.get('cryptocurrencies', [])
         # Get cryptocurrency field from gotten message
-        crypto_info = message.value.get('cryptocurrency', {})
+        # crypto_info = message.value.get('cryptocurrency', {})
         # Get timestamp field from gotten message
         timestamp = message.value.get('timestamp', 'Inconnu')
 
         print(f"--- Données reçues à {timestamp} ---")
-        print_crypto(crypto_info)
+        # print_crypto(crypto_info)
 
-        # if data:
-            # print_all_cryptos(data)
+        if data:
+            print_all_cryptos(data)
             # top_10_by_rank(data)
         # else:
         #     print("Aucune donnée de cryptomonnaies trouvée.")
