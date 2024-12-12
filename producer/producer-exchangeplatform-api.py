@@ -59,15 +59,17 @@ while True:
                     "spot_volume_usd": item.get("spot_volume_usd"),
                     "maker_fee": item.get("maker_fee"),
                     "taker_fee": item.get("taker_fee"),
-                    "urls": item.get("urls")
+                    "urls": item.get("urls"),
+                    "timestamp": time.time()
                 }
+                producer.send('exchange_platform_topic', platform)
                 simplified_data.append(platform)
 
             message = {
                 'exchange_platforms': simplified_data,
                 'timestamp': time.time()
             }
-            producer.send('exchange_platform_topic', message)
+            
             producer.flush()
         else:
             log("No 'data' field in response, skipping...")
