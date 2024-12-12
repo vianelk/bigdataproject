@@ -49,7 +49,7 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-exchangeplatform-api.py"]
+    command: ["python", "-u", "producer-CoinMarketCap-API.py"]
 
   consumer:
     build:
@@ -63,7 +63,7 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    command: ["python", "-u", "consumer-exchangeplatform.py"]
+    command: ["python", "-u", "consumer-CoinMarketCap-API.py"]
 
   namenode: # Controle le stockage dans les datanode
     build: namenode
