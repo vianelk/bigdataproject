@@ -9,7 +9,7 @@ def json_deserializer(data: bytes):
 
 
 # Adresse du broker Kafka
-KAFKA_BROKER = os.environ.get('KAFKA_BROKER', 'localhost:9092')
+KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
 
 # Nom du topic
 topic = 'trending_topic'
@@ -20,7 +20,7 @@ consumer = KafkaConsumer(
     topic,
     bootstrap_servers=[KAFKA_BROKER],
     value_deserializer=json_deserializer,
-    auto_offset_reset='earliest'  # Lire tous les messages depuis le début
+    # auto_offset_reset='earliest'  # Lire tous les messages depuis le début
 )
 
 def top_10_by_rank(data):
@@ -38,17 +38,29 @@ def print_all_cryptos(data):
     for c in data:
         print(f"{c['name']:<20}{c['symbol']:<10}{c['is_active']:<10}{c['first_historical_data']:<25}{c['last_historical_data']:<25}")
 
+def print_crypto(data):
+    print(f"{'Nom':<20}{'Symbole':<10}{'Rang':<10}{'Actif':<10}{'Première Donnée':<25}{'Dernière Donnée':<25}")
+    print("-" * 100)
+    print(f"{data['name']:<20}{data['symbol']:<10}{data['is_active']:<10}{data['first_historical_data']:<25}{data['last_historical_data']:<25}")
+
 # Traitement des messages Kafka
 for message in consumer:
     try:
-        data = message.value.get('cryptocurrencies', [])
+        # data = message.value.get('cryptocurrencies', [])
+        # Get cryptocurrency field from gotten message
+        crypto_info = message.value.get('cryptocurrency', {})
+        # Get timestamp field from gotten message
         timestamp = message.value.get('timestamp', 'Inconnu')
 
-        print(f"\n--- Données reçues à {timestamp} ---")
-        if data:
-            print_all_cryptos(data)
-            top_10_by_rank(data)
-        else:
-            print("Aucune donnée de cryptomonnaies trouvée.")
+        print(f"--- Données reçues à {timestamp} ---")
+        print_crypto(crypto_info)
+
+        # if data:
+            # print_all_cryptos(data)
+            # top_10_by_rank(data)
+        # else:
+        #     print("Aucune donnée de cryptomonnaies trouvée.")
+
+        print()
     except Exception as e:
         print(f"Erreur lors du traitement du message : {e}")

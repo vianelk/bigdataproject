@@ -8,7 +8,7 @@ def log(*args, **kwargs):
 def json_serializer(data):
     return json.dumps(data).encode('utf-8')
 
-KAFKA_BROKER = os.environ.get('KAFKA_BROKER','localhost:9092')
+KAFKA_BROKER = os.environ.get('KAFKA_BROKER')
 REQUESTS_INTERVAL = 10
 
 producer = KafkaProducer(
@@ -34,39 +34,47 @@ while True:
     if initialized:
         time.sleep(REQUESTS_INTERVAL)
     initialized = True
-    print("sending request")
 
     try:
         response = requests.get(url, headers=headers)
         data = response.json()
 
-
-        # data["data"] contient la liste des crypto-monnaies.
-
         if "data" in data:
-            simplified_data = []
+            # simplified_data = []
+            # Print data length value
+            print(f'Data has length : {len(data["data"])}')
+
             for item in data["data"]:
+                # Get useful info
                 crypto_info = {
                     "id": item["id"],
                     "name": item["name"],
                     "symbol": item["symbol"],
                     "is_active": item["is_active"],
                     "first_historical_data": item.get("first_historical_data"),
-                    "last_historical_data": item.get("last_historical_data")
+                    "last_historical_data": item.get("last_historical_data"),
                 }
-                #print(crypto_info)
-                #producer.send('trending_topic', crypto_info)
-                simplified_data.append(crypto_info)
+                # simplified_data.append(crypto_info)
 
-            message = {
-                'cryptocurrencies': simplified_data,
-                'timestamp': time.time()
-            }
-            producer.send('trending_topic', message)
+                # Create a JSON message from that info
+                message = {
+                    'cryptocurrency': crypto_info,
+                    'timestamp': time.time()
+                }
+                # print(message)
+                # Send message to kafka broker
+                producer.send('trending_topic', message)
+
+            # message = {
+            #     'cryptocurrencies': simplified_data,
+            #     'timestamp': time.time()
+            # }
+            # producer.send('trending_topic', message)
+
+            # Wait for all messages to be sent
             producer.flush()
         else:
             log("No 'data' field in response, skipping...")
-
     except Exception as err:
         log(f'Error: {err}')
         continue
