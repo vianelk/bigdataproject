@@ -36,12 +36,12 @@ def print_all_cryptos(data):
     print(f"{'Nom':<20}{'Symbole':<10}{'Rang':<10}{'Actif':<10}{'Première Donnée':<25}{'Dernière Donnée':<25}")
     print("-" * 100)
     for c in data:
-        print(f"{c['name']:<20}{c['symbol']:<10}{c['is_active']:<10}{c['first_historical_data']:<25}{c['last_historical_data']:<25}")
+        print(f"{c['name']:<20}{c['symbol']:<10}{c['rank']:<10}{c['is_active']:<10}{c['first_historical_data']:<25}{c['last_historical_data']:<25}")
 
 def print_crypto(data):
     print(f"{'Nom':<20}{'Symbole':<10}{'Rang':<10}{'Actif':<10}{'Première Donnée':<25}{'Dernière Donnée':<25}")
     print("-" * 100)
-    print(f"{data['name']:<20}{data['symbol']:<10}{data['is_active']:<10}{data['first_historical_data']:<25}{data['last_historical_data']:<25}")
+    print(f"{data['name']:<20}{data['symbol']:<10}{data['rank']:<10}{data['is_active']:<10}{data['first_historical_data']:<25}{data['last_historical_data']:<25}")
 
 # Traitement des messages Kafka
 for message in consumer:

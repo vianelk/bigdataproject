@@ -23,7 +23,7 @@ url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/map'
 parameters = {
   'start':'1',
   'limit':'10',
-  'convert':'EUR'
+  'sort': 'cmc_rank'
 }
 headers = {
   'Accepts': 'application/json',
@@ -36,7 +36,7 @@ while True:
     initialized = True
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, params=parameters)
         data = response.json()
 
         if "data" in data:
@@ -50,6 +50,7 @@ while True:
                     "id": item["id"],
                     "name": item["name"],
                     "symbol": item["symbol"],
+                    "rank": item["rank"],
                     "is_active": item["is_active"],
                     "first_historical_data": item.get("first_historical_data"),
                     "last_historical_data": item.get("last_historical_data"),
