@@ -1,0 +1,104 @@
+{
+  "paragraphs": [
+    {
+      "text": "%spark.pyspark\r\n\r\nfrom pyspark.sql import SparkSession\r\nfrom pyspark.sql.functions import col, from_json\r\nfrom pyspark.sql.types import StructType, StructField, StringType, FloatType, IntegerType, ArrayType\r\n\r\n\r\n# Kafka broker and topic\r\nkafka_broker \u003d \"kafka:9092\"\r\nkafka_topic \u003d \"exchange_platform_topic\"\r\n\r\n# Initialize Spark Session\r\nspark \u003d SparkSession.builder \\\r\n    .appName(\"KafkaSparkMemorySink\") \\\r\n    .getOrCreate()\r\n\r\n# Read data from Kafka topic\r\nkafka_stream \u003d spark.readStream \\\r\n    .format(\"kafka\") \\\r\n    .option(\"kafka.bootstrap.servers\", kafka_broker) \\\r\n    .option(\"subscribe\", kafka_topic) \\\r\n    .option(\"startingOffsets\", \"latest\") \\\r\n    .load()\r\n\r\n\r\n# Définir le schéma pour les données JSON\r\nplatform_schema \u003d StructType([\r\n    StructField(\"id\", StringType(), True),\r\n    StructField(\"name\", StringType(), True),\r\n    StructField(\"description\", StringType(), True),\r\n    StructField(\"date_launched\", StringType(), True),\r\n    StructField(\"weekly_visits\", FloatType(), True),\r\n    StructField(\"spot_volume_usd\", FloatType(), True),\r\n    StructField(\"maker_fee\", FloatType(), True),\r\n    StructField(\"taker_fee\", FloatType(), True),\r\n    StructField(\"urls\", ArrayType(StringType()), True),\r\n    StructField(\"timestamp\", FloatType(), True)\r\n])\r\n\r\n# Lire les données depuis Kafka\r\nkafka_stream \u003d spark.readStream \\\r\n    .format(\"kafka\") \\\r\n    .option(\"kafka.bootstrap.servers\", kafka_broker) \\\r\n    .option(\"subscribe\", kafka_topic) \\\r\n    .option(\"startingOffsets\", \"latest\") \\\r\n    .load()\r\n\r\n# Convertir la colonne \u0027value\u0027 en chaîne de caractères\r\nmessages \u003d kafka_stream.selectExpr(\"CAST(value AS STRING) as message\")\r\n\r\n# Analyser les messages JSON en utilisant le schéma défini\r\nparsed_messages \u003d messages.select(from_json(col(\"message\"), platform_schema).alias(\"parsed\"))\r\n\r\n# Sélectionner les colonnes du JSON pour l\u0027affichage\r\nfinal_df \u003d parsed_messages.select(\r\n    \"parsed.id\", \r\n    \"parsed.name\", \r\n    #\"parsed.description\", \r\n    \"parsed.date_launched\", \r\n    \"parsed.weekly_visits\", \r\n    \"parsed.spot_volume_usd\", \r\n    \"parsed.maker_fee\", \r\n    \"parsed.taker_fee\", \r\n    \"parsed.urls\", \r\n    \"parsed.timestamp\"\r\n)\r\n\r\n# Écrire les résultats dans la mémoire pour visualisation\r\nquery \u003d final_df.writeStream \\\r\n    .outputMode(\"append\") \\\r\n    .format(\"memory\") \\\r\n    .queryName(\"kafka_json_messages\") \\\r\n    .start()\r\n\r\n# Simuler le traitement en continu\r\nimport time\r\nprint(\"Streaming started... Run the following to view data:\")\r\nprint(\"spark.sql(\u0027SELECT * FROM kafka_json_messages\u0027).show()\")\r\n\r\n# Laisser le stream tourner indéfiniment\r\ntry:\r\n    while True:\r\n        time.sleep(10)\r\n        # Afficher les données depuis la table temporaire en mémoire\r\n        spark.sql(\"SELECT * FROM kafka_json_messages\").show(truncate\u003dFalse)\r\nexcept KeyboardInterrupt:\r\n    print(\"Stream stopped.\")\r\n    query.stop()\r\n",
+      "user": "anonymous",
+      "dateUpdated": "2024-12-14 16:26:57.523",
+      "progress": 0,
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Streaming started... Run the following to view data:\nspark.sql(\u0027SELECT * FROM kafka_json_messages\u0027).show()\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\n|id               |name             |date_launched           |weekly_visits|spot_volume_usd|maker_fee|taker_fee|urls|timestamp   |\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\n|binance          |Binance          |2017-07-14T00:00:00.000Z|1.817792E7   |2.05209211E10  |0.02     |0.04     |NULL|1.73419366E9|\n|bitfinex         |Bitfinex         |2012-10-11T00:00:00.000Z|165411.0     |2.84643168E8   |0.02     |0.065    |NULL|1.73419366E9|\n|bybit            |Bybit            |2018-03-01T00:00:00.000Z|5920599.0    |6.0338371E9    |0.02     |0.055    |NULL|1.73419366E9|\n|coinbase-exchange|Coinbase Exchange|2014-05-24T00:00:00.000Z|78346.0      |3.80471603E9   |0.0      |0.0      |NULL|1.73419366E9|\n|gate-io          |Gate.io          |2013-01-01T00:00:00.000Z|3698978.0    |4.319618E9     |0.015    |0.05     |NULL|1.73419366E9|\n|gemini           |Gemini           |2015-10-01T00:00:00.000Z|310315.0     |1.03809504E8   |0.0      |0.0      |NULL|1.73419366E9|\n|htx              |HTX              |2013-09-01T00:00:00.000Z|4071096.0    |2.45365581E9   |0.02     |0.06     |NULL|1.73419366E9|\n|kraken           |Kraken           |2011-07-28T00:00:00.000Z|1817407.0    |9.6864954E8    |0.02     |0.05     |NULL|1.73419366E9|\n|kucoin           |KuCoin           |2017-08-13T00:00:00.000Z|2479847.0    |1.33421286E9   |0.02     |0.06     |NULL|1.73419366E9|\n|okx              |OKX              |2017-01-03T00:00:00.000Z|5705665.0    |3.7203543E9    |0.02     |0.05     |NULL|1.73419366E9|\n|upbit            |Upbit            |2017-10-24T00:00:00.000Z|3196655.0    |4.694018E9     |0.0      |0.1      |NULL|1.73419366E9|\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\n\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\n|id               |name             |date_launched           |weekly_visits|spot_volume_usd|maker_fee|taker_fee|urls|timestamp   |\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\n|binance          |Binance          |2017-07-14T00:00:00.000Z|1.817792E7   |2.05209211E10  |0.02     |0.04     |NULL|1.73419366E9|\n|bitfinex         |Bitfinex         |2012-10-11T00:00:00.000Z|165411.0     |2.84643168E8   |0.02     |0.065    |NULL|1.73419366E9|\n|bybit            |Bybit            |2018-03-01T00:00:00.000Z|5920599.0    |6.0338371E9    |0.02     |0.055    |NULL|1.73419366E9|\n|coinbase-exchange|Coinbase Exchange|2014-05-24T00:00:00.000Z|78346.0      |3.80471603E9   |0.0      |0.0      |NULL|1.73419366E9|\n|gate-io          |Gate.io          |2013-01-01T00:00:00.000Z|3698978.0    |4.319618E9     |0.015    |0.05     |NULL|1.73419366E9|\n|gemini           |Gemini           |2015-10-01T00:00:00.000Z|310315.0     |1.03809504E8   |0.0      |0.0      |NULL|1.73419366E9|\n|htx              |HTX              |2013-09-01T00:00:00.000Z|4071096.0    |2.45365581E9   |0.02     |0.06     |NULL|1.73419366E9|\n|kraken           |Kraken           |2011-07-28T00:00:00.000Z|1817407.0    |9.6864954E8    |0.02     |0.05     |NULL|1.73419366E9|\n|kucoin           |KuCoin           |2017-08-13T00:00:00.000Z|2479847.0    |1.33421286E9   |0.02     |0.06     |NULL|1.73419366E9|\n|okx              |OKX              |2017-01-03T00:00:00.000Z|5705665.0    |3.7203543E9    |0.02     |0.05     |NULL|1.73419366E9|\n|upbit            |Upbit            |2017-10-24T00:00:00.000Z|3196655.0    |4.694018E9     |0.0      |0.1      |NULL|1.73419366E9|\n|binance          |Binance          |2017-07-14T00:00:00.000Z|1.817792E7   |2.05209211E10  |0.02     |0.04     |NULL|1.73419366E9|\n|bitfinex         |Bitfinex         |2012-10-11T00:00:00.000Z|165411.0     |2.84643168E8   |0.02     |0.065    |NULL|1.73419366E9|\n|bybit            |Bybit            |2018-03-01T00:00:00.000Z|5920599.0    |6.0338371E9    |0.02     |0.055    |NULL|1.73419366E9|\n|coinbase-exchange|Coinbase Exchange|2014-05-24T00:00:00.000Z|78346.0      |3.80471603E9   |0.0      |0.0      |NULL|1.73419366E9|\n|gate-io          |Gate.io          |2013-01-01T00:00:00.000Z|3698978.0    |4.319618E9     |0.015    |0.05     |NULL|1.73419366E9|\n|gemini           |Gemini           |2015-10-01T00:00:00.000Z|310315.0     |1.03809504E8   |0.0      |0.0      |NULL|1.73419366E9|\n|htx              |HTX              |2013-09-01T00:00:00.000Z|4071096.0    |2.45365581E9   |0.02     |0.06     |NULL|1.73419366E9|\n|kraken           |Kraken           |2011-07-28T00:00:00.000Z|1817407.0    |9.6864954E8    |0.02     |0.05     |NULL|1.73419366E9|\n|kucoin           |KuCoin           |2017-08-13T00:00:00.000Z|2479847.0    |1.33421286E9   |0.02     |0.06     |NULL|1.73419366E9|\n+-----------------+-----------------+------------------------+-------------+---------------+---------+---------+----+------------+\nonly showing top 20 rows\n\nStream stopped.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d3"
+            },
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d4"
+            },
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d8"
+            },
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d9"
+            },
+            {
+              "jobUrl": "http://b57d7933ab71:4040/jobs/job?id\u003d10"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1733971548000_2110729218",
+      "id": "paragraph_1733971548000_2110729218",
+      "dateCreated": "2024-12-12 02:45:48.000",
+      "dateStarted": "2024-12-14 16:26:57.583",
+      "dateFinished": "2024-12-14 16:27:50.873",
+      "status": "ABORT"
+    },
+    {
+      "text": "%spark.pyspark\n",
+      "user": "anonymous",
+      "dateUpdated": "2024-12-12 13:27:51.623",
+      "progress": 0,
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1734010071617_424161537",
+      "id": "paragraph_1734010071617_424161537",
+      "dateCreated": "2024-12-12 13:27:51.622",
+      "status": "READY"
+    }
+  ],
+  "name": "micro_batch_processing",
+  "id": "2KEXUJHET",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.11.2",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {
+    "isRunning": true
+  }
+}

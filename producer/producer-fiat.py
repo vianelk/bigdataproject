@@ -52,13 +52,13 @@ while True:
                     "symbol": item["symbol"],
                     
                 }
+                producer.send('fiat_topic', message)
                 simplified_data.append(crypto_info)
 
             message = {
                 'cryptocurrencies': simplified_data,
                 'timestamp': time.time()
             }
-            producer.send('fiat_topic', message)
             producer.flush()
         else:
             log("No 'data' field in response, skipping...")

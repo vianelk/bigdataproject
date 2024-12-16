@@ -49,7 +49,7 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./producer:/app
-    command: ["python", "-u", "producer-CoinMarketCap-API.py"]
+    command: ["python", "-u", "producer-exchangeplatform-api.py"]
 
   consumer:
     build:
@@ -63,15 +63,17 @@ services:
       KAFKA_BROKER: kafka:9092
     volumes:
       - ./consumer:/app
-    command: ["python", "-u", "consumer-CoinMarketCap-API.py"]
+    command: ["python", "-u", "consumer-exchangeplatform.py"]
 
   namenode: # Controle le stockage dans les datanode
     build: namenode
     volumes:
       - ./spark-scripts:/opt/zeppelin/notebook/spark-scripts
+      - ./datasets:/tmp/datasets
+      - ./namenode/scripts:/opt/hadoop/scripts
     ports:
       - 9870:9870 # HDFS webUI
-      - 8080:8080 # Zeppelin webUI
+      - 8080:8080 # Zeppelin webUI 
     env_file:
       - ./config.env
     environment:

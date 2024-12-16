@@ -1,7 +1,9 @@
-﻿{
+{
   "paragraphs": [
     {
+      "text": "print(\u0027Hello world\u0027)",
       "user": "anonymous",
+      "dateUpdated": "2024-12-10 12:12:12.000",
       "progress": 0,
       "config": {
         "editorSetting": {
@@ -9,9 +11,9 @@
           "editOnDblClick": false,
           "completionSupport": true
         },
-        "colWidth": 12,
+        "colWidth": 12.0,
         "editorMode": "ace/mode/python",
-        "fontSize": 9,
+        "fontSize": 9.0,
         "results": {},
         "enabled": true
       },
@@ -19,19 +21,6 @@
         "params": {},
         "forms": {}
       },
-      "apps": [],
-      "runtimeInfos": {},
-      "progressUpdateIntervalMs": 500,
-      "jobName": "paragraph_1733832715171_1933969205",
-      "id": "paragraph_1733832715171_1933969205",
-      "dateCreated": "2024-12-10T12:11:55+0000",
-      "status": "FINISHED",
-      "focus": true,
-      "$$hashKey": "object:944",
-      "text": "print('Hello world')",
-      "dateUpdated": "2024-12-10T12:12:12+0000",
-      "dateFinished": "2024-12-10T12:12:15+0000",
-      "dateStarted": "2024-12-10T12:12:12+0000",
       "results": {
         "code": "SUCCESS",
         "msg": [
@@ -40,7 +29,72 @@
             "data": "Hello world\n"
           }
         ]
-      }
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1733832715171_1933969205",
+      "id": "paragraph_1733832715171_1933969205",
+      "dateCreated": "2024-12-10 12:11:55.000",
+      "dateStarted": "2024-12-10 12:12:12.000",
+      "dateFinished": "2024-12-10 12:12:15.000",
+      "status": "FINISHED"
+    },
+    {
+      "text": "import matplotlib.pyplot as plt",
+      "user": "anonymous",
+      "dateUpdated": "2024-12-12 11:18:49.913",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Fail to execute line 1: import matplotlib.pyplot as plt\nTraceback (most recent call last):\n  File \"/tmp/python513386727402573148/zeppelin_python.py\", line 167, in \u003cmodule\u003e\n    exec(code, _zcUserQueryNameSpace)\n  File \"\u003cstdin\u003e\", line 1, in \u003cmodule\u003e\nModuleNotFoundError: No module named \u0027matplotlib\u0027\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1734002192827_1024980952",
+      "id": "paragraph_1734002192827_1024980952",
+      "dateCreated": "2024-12-12 11:16:32.828",
+      "dateStarted": "2024-12-12 11:18:49.921",
+      "dateFinished": "2024-12-12 11:18:49.946",
+      "status": "ERROR"
+    },
+    {
+      "user": "anonymous",
+      "progress": 0,
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1734002207628_31343797",
+      "id": "paragraph_1734002207628_31343797",
+      "dateCreated": "2024-12-12 11:16:47.628",
+      "status": "READY"
     }
   ],
   "name": "example2",
@@ -55,6 +109,5 @@
     "looknfeel": "default",
     "personalizedMode": "false"
   },
-  "info": {},
-  "path": "/example2"
+  "info": {}
 }
